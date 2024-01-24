@@ -2,14 +2,21 @@ x = 5
 y = "John"
 print(x)
 print(y)
-print(type(x))
-print(type(y))
+x = 4       # x is of type int
+x = "Sally" # x is now of type str
+print(x)
+x = str(3)    # x will be '3'
+y = int(3)    # y will be 3
+z = float(3)  # z will be 3.0
+
 x = "John"
 # is the same as
 x = 'John'
+
 a = 4
 A = "Sally"
 #A will not overwrite a
+
 myvar = "John"
 my_var = "John"
 _my_var = "John"
@@ -19,6 +26,7 @@ myvar2 = "John"
 myVariableName = "John"#camel case
 MyVariableName = "John"#pascal case
 my_variable_name = "John"#snake case
+
 x, y, z = "Orange", "Banana", "Cherry"
 print(x)
 print(y)
@@ -32,6 +40,7 @@ x, y, z = fruits
 print(x)
 print(y)
 print(z)
+
 x = "Python is awesome"
 print(x)
 x = "Python"
@@ -45,3 +54,38 @@ print(x + y + z)
 x = 5
 y = "John"
 print(x, y)
+
+x = "awesome"
+
+def myfunc():
+  print("Python is " + x)
+
+myfunc()
+
+x = "awesome"
+
+def myfunc():
+  x = "fantastic"
+  print("Python is " + x)
+
+myfunc()
+
+print("Python is " + x)
+
+def myfunc():
+  global x
+  x = "fantastic"
+
+myfunc()
+
+print("Python is " + x)
+
+x = "awesome"
+
+def myfunc():
+  global x
+  x = "fantastic"
+
+myfunc()
+
+print("Python is " + x)
