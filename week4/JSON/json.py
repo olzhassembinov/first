@@ -1,7 +1,7 @@
 import json
 
 # Load JSON data from file
-with open('file.json', 'r') as file:
+with open('week4/JSON/file.json', 'r') as file:
     data = json.load(file)
 
 # Extract the interface status information
