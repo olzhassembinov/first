@@ -1,95 +1,108 @@
-from utils import *
+from turtle import pos
+import pygame
 
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Drawing Program")
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((640, 480))
+    clock = pygame.time.Clock()
 
+    radius = 15
+    x = 0
+    y = 0
+    mode = 'blue'
+    points = []
+    position = (320,240)
+    screen.fill((0, 0, 0))
 
-def init_grid(rows, cols, color):
-    grid = []
+    while True:
 
-    for i in range(rows):
-        grid.append([])
-        for _ in range(cols):
-            grid[i].append(color)
+        pressed = pygame.key.get_pressed()
 
-    return grid
-
-
-def draw_grid(win, grid):
-    for i, row in enumerate(grid):
-        for j, pixel in enumerate(row):
-            pygame.draw.rect(win, pixel, (j * PIXEL_SIZE, i *
-                                          PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE))
-
-    if DRAW_GRID_LINES:
-        for i in range(ROWS + 1):
-            pygame.draw.line(win, BLACK, (0, i * PIXEL_SIZE),
-                             (WIDTH, i * PIXEL_SIZE))
-
-        for i in range(COLS + 1):
-            pygame.draw.line(win, BLACK, (i * PIXEL_SIZE, 0),
-                             (i * PIXEL_SIZE, HEIGHT - TOOLBAR_HEIGHT))
+        alt_held = pressed[pygame.K_LALT] or pressed[pygame.K_RALT]
+        ctrl_held = pressed[pygame.K_LCTRL] or pressed[pygame.K_RCTRL]
 
 
-def draw(win, grid, buttons):
-    win.fill(BG_COLOR)
-    draw_grid(win, grid)
 
-    for button in buttons:
-        button.draw(win)
+        for event in pygame.event.get():
 
-    pygame.display.update()
+            
+            if event.type == pygame.QUIT:
+                return
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_w and ctrl_held:
+                    return
+                if event.key == pygame.K_F4 and alt_held:
+                    return
+                if event.key == pygame.K_ESCAPE:
+                    return
 
+                # determine if a letter key was pressed
+                if event.key == pygame.K_r:
+                    mode = 'red'
+                elif event.key == pygame.K_g:
+                    mode = 'green'
+                elif event.key == pygame.K_b:
+                    mode = 'blue'
+                elif event.key == pygame.K_e:
+                    mode = (0,0,0)
 
-def get_row_col_from_pos(pos):
-    x, y = pos
-    row = y // PIXEL_SIZE
-    col = x // PIXEL_SIZE
+                if event.key == pygame.K_a: #rect
+                    pygame.draw.rect(screen, mode, (position[0],position[1], radius*2.5, radius*2))
+                elif event.key == pygame.K_c:# circle
+                    pygame.draw.circle(screen,mode,position,radius*2)
+                elif event.key == pygame.K_s: # square
+                    pygame.draw.rect(screen, mode, (position[0],position[1], radius*2, radius*2))
+                elif event.key == pygame.K_e: # equilateral triangle
+                    pygame.draw.polygon(screen, mode, ((position[0]+50,position[1]+50),(position[0],position[1]-50),(position[0]-50,position[1]+50)))
+                elif event.key == pygame.K_t: #right triangle
+                    pygame.draw.polygon(screen, mode, ((position[0],position[1]),(position[0],position[1]-70),(position[0]-50,position[1])))
+                elif event.key == pygame.K_h: #rhombus
+                    pygame.draw.polygon(screen, mode, ((position[0],position[1]-50),(position[0]+50,position[1]),(position[0],position[1]+50), (position[0]-50,position[1])))
 
-    if row >= ROWS:
-        raise IndexError
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1: # left click grows radius
+                    radius = min(200, radius + 1)
+                elif event.button == 3: # right click shrinks radius
+                    radius = max(1, radius - 1)
 
-    return row, col
+            if event.type == pygame.MOUSEMOTION:
+                # if mouse moved, add point to list
+                position = event.pos
+                points = points + [position]
+                points = points[-256:]
 
+        # draw all points
+        i = 0
+        while i < len(points) - 1:
+            drawLineBetween(screen, i, points[i], points[i + 1], radius, mode)
+            i += 1
 
-run = True
-clock = pygame.time.Clock()
-grid = init_grid(ROWS, COLS, BG_COLOR)
-drawing_color = BLACK
+        pygame.display.flip()
 
-button_y = HEIGHT - TOOLBAR_HEIGHT/2 - 25
-buttons = [
-    Button(10, button_y, 50, 50, BLACK),
-    Button(70, button_y, 50, 50, RED),
-    Button(130, button_y, 50, 50, GREEN),
-    Button(190, button_y, 50, 50, BLUE),
-    Button(250, button_y, 50, 50, WHITE, "Erase", BLACK),
-    Button(310, button_y, 50, 50, WHITE, "Clear", BLACK)
-]
+        clock.tick(60)
 
-while run:
-    clock.tick(FPS)
+def drawLineBetween(screen, index, start, end, width, color_mode):
+    c1 = max(0, min(255, 2 * index - 256))
+    c2 = max(0, min(255, 2 * index))
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
+    if color_mode == 'blue':
+        color = (c1, c1, c2)
+    elif color_mode == 'red':
+        color = (c2, c1, c1)
+    elif color_mode == 'green':
+        color = (c1, c2, c1)
+    elif color_mode == (0,0,0):
+        color = (0,0,0)
 
-        if pygame.mouse.get_pressed()[0]:
-            pos = pygame.mouse.get_pos()
+    dx = start[0] - end[0]
+    dy = start[1] - end[1]
+    iterations = max(abs(dx), abs(dy))
 
-            try:
-                row, col = get_row_col_from_pos(pos)
-                grid[row][col] = drawing_color
-            except IndexError:
-                for button in buttons:
-                    if not button.clicked(pos):
-                        continue
-
-                    drawing_color = button.color
-                    if button.text == "Clear":
-                        grid = init_grid(ROWS, COLS, BG_COLOR)
-                        drawing_color = BLACK
-
-    draw(WIN, grid, buttons)
-
-pygame.quit()
+    for i in range(iterations):
+        progress = 1.0 * i / iterations
+        aprogress = 1 - progress
+        x = int(aprogress * start[0] + progress * end[0])
+        y = int(aprogress * start[1] + progress * end[1])
+        pygame.draw.circle(screen, color, (x, y), width)
+    
+main()

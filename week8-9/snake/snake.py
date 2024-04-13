@@ -42,6 +42,7 @@ while True:
 	    snake.append((x, y))
 	    snake = snake[-length:]
     # eating food
+    
     if snake[-1] == apple:
         apple = randrange(SIZE, RES - SIZE, SIZE), randrange(SIZE, RES - SIZE, SIZE)
         length += 1
